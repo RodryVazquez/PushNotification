@@ -26,6 +26,7 @@ import com.google.android.gms.common.GoogleApiAvailability;
 
 import intelectix.pushnotification.GCM.QuickstartPreferences;
 import intelectix.pushnotification.GCM.RegistrationIntentService;
+import intelectix.pushnotification.Helpers.ConnectionDetector;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -60,12 +61,13 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        //
+        //Inicializamos el broadcastreceiver
         registratBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 SharedPreferences sharedPreferences =
                         PreferenceManager.getDefaultSharedPreferences(context);
+                //Indicamos si ya enviamos el token al servidor
                 boolean sentToken = sharedPreferences.getBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false);
                 if (sentToken) {
 
@@ -75,14 +77,16 @@ public class MainActivity extends AppCompatActivity
             }
         };
 
-        //Si contamos con el APK de Google Play Services
+        //Si contamos con el APK de Google Play Services, registramos el dispositivo en GCM
         if (checkPlayServices()) {
-            Intent intent = new Intent(this, RegistrationIntentService.class);
-            startService(intent);
+            //Verificamos el acceso a internet
+            ConnectionDetector connectionDetector = new ConnectionDetector(this);
+            if (connectionDetector.isConnectingToInternet()) {
+                Intent intent = new Intent(this, RegistrationIntentService.class);
+                startService(intent);
+            }
         }
-
     }
-
 
     @Override
     protected void onResume() {
