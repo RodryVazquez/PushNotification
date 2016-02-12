@@ -6,13 +6,10 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-
 import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
-
 import java.io.IOException;
-
 import intelectix.pushnotification.R;
 
 
@@ -21,13 +18,9 @@ public class RegistrationIntentService extends IntentService {
     private static final String TAG = "ResgistrationIntentService";
     private static final String[] TOPICS = {"global"};
 
-    //AIzaSyAlB1FlPX9efY35wC9TyRZjv4hSgfRIi60
-    //718637804954
-
     public RegistrationIntentService() {
         super(TAG);
     }
-
 
     @Override
     protected void onHandleIntent(Intent intent) {

@@ -20,9 +20,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+
+import org.w3c.dom.Text;
 
 import intelectix.pushnotification.GCM.QuickstartPreferences;
 import intelectix.pushnotification.GCM.RegistrationIntentService;
@@ -31,9 +34,10 @@ import intelectix.pushnotification.Helpers.ConnectionDetector;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private TextView txtMessageStatus;
+
     private static final int PLAY_SERVICE_RESOLUTION_REQUEST = 9000;
     private static final String TAG = "MainActivity";
-    //
     private BroadcastReceiver registratBroadcastReceiver;
 
     @Override
@@ -61,6 +65,8 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        txtMessageStatus = (TextView)findViewById(R.id.txtMessageStatus);
+
         //Inicializamos el broadcastreceiver
         registratBroadcastReceiver = new BroadcastReceiver() {
             @Override
@@ -70,9 +76,9 @@ public class MainActivity extends AppCompatActivity
                 //Indicamos si ya enviamos el token al servidor
                 boolean sentToken = sharedPreferences.getBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false);
                 if (sentToken) {
-
+                    txtMessageStatus.setText(getString(R.string.gcm_send_message));
                 } else {
-
+                    txtMessageStatus.setText(getString(R.string.token_error_message));
                 }
             }
         };
