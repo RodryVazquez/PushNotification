@@ -27,9 +27,13 @@ import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.w3c.dom.Text;
 
+import java.util.List;
+
 import intelectix.pushnotification.GCM.QuickstartPreferences;
 import intelectix.pushnotification.GCM.RegistrationIntentService;
 import intelectix.pushnotification.Helpers.ConnectionDetector;
+import intelectix.pushnotification.Models.DeviceModel;
+import intelectix.pushnotification.Service.DeviceService;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -65,7 +69,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        txtMessageStatus = (TextView)findViewById(R.id.txtMessageStatus);
+        txtMessageStatus = (TextView) findViewById(R.id.txtMessageStatus);
 
         //Inicializamos el broadcastreceiver
         registratBroadcastReceiver = new BroadcastReceiver() {
@@ -76,7 +80,17 @@ public class MainActivity extends AppCompatActivity
                 //Indicamos si ya enviamos el token al servidor
                 boolean sentToken = sharedPreferences.getBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false);
                 if (sentToken) {
-                    txtMessageStatus.setText(getString(R.string.gcm_send_message));
+                    List<DeviceModel> deviceModelList = DeviceModel.listAll(DeviceModel.class);
+                    String token = null;
+                    for (DeviceModel deviceModel : deviceModelList
+                            ) {
+                        token = deviceModel.getToken();
+                        break;
+                    }
+                    //Registramos el dispositivo en el servidor
+                    DeviceService deviceService = new DeviceService(MainActivity.this, txtMessageStatus);
+                    deviceService.sendRegistrationId(token);
+
                 } else {
                     txtMessageStatus.setText(getString(R.string.token_error_message));
                 }
@@ -88,8 +102,20 @@ public class MainActivity extends AppCompatActivity
             //Verificamos el acceso a internet
             ConnectionDetector connectionDetector = new ConnectionDetector(this);
             if (connectionDetector.isConnectingToInternet()) {
-                Intent intent = new Intent(this, RegistrationIntentService.class);
-                startService(intent);
+                //Listamos el dispositivo y verificamos si ya se registro al servidor
+                List<DeviceModel> deviceModelList = DeviceModel.listAll(DeviceModel.class);
+                boolean active = false;
+                for (DeviceModel device : deviceModelList
+                        ) {
+                    active = device.getActive();
+                    break;
+                }
+                if (!active) {
+                    Intent intent = new Intent(this, RegistrationIntentService.class);
+                    startService(intent);
+                } else {
+                    txtMessageStatus.setText("Dispositivo registrado con exito.");
+                }
             }
         }
     }
@@ -100,7 +126,6 @@ public class MainActivity extends AppCompatActivity
         LocalBroadcastManager.getInstance(this).registerReceiver(registratBroadcastReceiver,
                 new IntentFilter(QuickstartPreferences.REGISTRATION_COMPLETE));
     }
-
 
     @Override
     protected void onPause() {
